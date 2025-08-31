@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Learning } from "./compornents/Learning";
 import { Studycontents } from "./compornents/studycontents";
 import "./index.css";
+import { supabase } from "./supabase";
 
 export default function App() {
   const [learningtext, setLeaningtext] = useState("");
@@ -31,6 +32,25 @@ export default function App() {
     setError("");
     setTotaltime(totaltime + (parseInt(learningtime, 10) || 0));
   };
+  useEffect(() => {
+    const fetchRecords = async () => {
+      const { data, error } = await supabase.from("study-record").select("*");
+
+      if (error) {
+        console.error(error);
+        setError("データの取得に失敗しました");
+      } else {
+        setRecords(data || []);
+        const total = (data || []).reduce(
+          (sum, rec) => sum + (rec.time || 0),
+          0
+        );
+        setTotaltime(total);
+      }
+    };
+
+    fetchRecords();
+  }, []);
 
   return (
     <div className="App">
