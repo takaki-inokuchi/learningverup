@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Learning } from "./compornents/Learning";
 import { Studycontents } from "./compornents/studycontents";
 import "./index.css";
-import { supabase } from "./supabase";
+import { supabase } from "../utils/supabase";
 
 export default function App() {
   const [learningtext, setLeaningtext] = useState("");
