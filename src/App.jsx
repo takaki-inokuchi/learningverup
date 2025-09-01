@@ -30,12 +30,13 @@ export default function App() {
 
     const { data, error } = await supabase
       .from("study-record")
-      .insert([newRecord]);
+      .insert([newRecord])
+      .select();
     if (error) {
       console.error(error);
       setError("データの取得に失敗しました。");
     } else {
-      setRecords([...records, newRecord]);
+      setRecords([...records, data[0]]);
       setLeaningtext("");
       setLeaningtime("");
       setError("");
@@ -43,10 +44,30 @@ export default function App() {
     }
   };
 
+  const deletebutton = async (targetId) => {
+    console.log("targetId:", targetId);
+
+    const { data, error } = await supabase
+      .from("study-record")
+      .delete()
+      .eq("id", targetId);
+    if (error) {
+      console.log(error);
+      setError("データの削除に失敗しました");
+    } else {
+      console.log("削除成功", data);
+      setRecords(records.filter((record) => record.id !== targetId));
+    }
+  };
+
   useEffect(() => {
     const fetchRecords = async () => {
       setloading(true);
-      const { data, error } = await supabase.from("study-record").select("*");
+      const { data, error } = await supabase
+        .from("study-record")
+        .select("id, title, time");
+      console.log("fetch data:", data);
+      console.log("fetch error:", error);
 
       if (error) {
         console.error(error);
@@ -82,7 +103,7 @@ export default function App() {
             registerButton={registerButton}
           />
           {error}
-          <Studycontents records={records} />
+          <Studycontents records={records} deletebutton={deletebutton} />
           <p>合計時間：{totaltime}/1000</p>
         </div>
       )}
