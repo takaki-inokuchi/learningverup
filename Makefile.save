@@ -1,0 +1,12 @@
+build:
+	npm install
+build:
+	npm install
+	npm run build
+
+deploy: build
+	firebase deploy	npm run build
+
+deploy: build
+	firebase deploy
+

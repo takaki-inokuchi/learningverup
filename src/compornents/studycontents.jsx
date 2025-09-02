@@ -6,7 +6,7 @@ export const Studycontents = (props) => {
         {records.map((record, index) => (
           <li key={record.id}>
             {record.title} {record.time}時間
-            <button onClick={() => deletebutton(record.id)}>削除</button>
+            <button onClick={() => deletebutton(record.id)}>TODOを削除</button>
           </li>
         ))}
       </ul>
