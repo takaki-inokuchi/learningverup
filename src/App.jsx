@@ -89,12 +89,9 @@ export default function App() {
   return (
     <div className="App">
       {loading ? (
-        <p>データ取得中・・・</p>
+        <p>データ取得中🐈・・・</p>
       ) : (
         <div>
-          <title>
-            <h1>学習記録一覧</h1>
-          </title>
           <h1 data-testid="title">Hello Jest</h1>
           <Learning
             learningtext={learningtext}
