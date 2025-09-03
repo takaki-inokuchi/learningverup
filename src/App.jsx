@@ -95,6 +95,7 @@ export default function App() {
           <title>
             <h1>学習記録一覧</h1>
           </title>
+          <h1 data-testid="title">Hello Jest</h1>
           <Learning
             learningtext={learningtext}
             learningtime={learningtime}
