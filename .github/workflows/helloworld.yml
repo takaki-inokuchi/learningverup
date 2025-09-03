@@ -1,12 +1,66 @@
-name: Hello World
+name: Scheduled deploy # 任意の名前
 
-on:
-  push:
-    branches:
-      - main
+on: #いつ実行するか指定
+  schedule:
+    - cron: "0 6 * * *" # 毎日6時に実行
+  workflow_dispatch: # 手動実行も可能
 
-jobs:
-  say_hello:
+jobs: #処理単位の決定
+  build: #buildというジョブを定義
+    name: build
+    runs-on: ubuntu-latest #環境を指定
+    steps: #順序
+      - name: Checkout code
+        uses: actions/checkout@v2 # GitHub リポジトリをクローンして使用　外部アクションを利用する意味
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2 #@v2はversion
+        with:
+          node-version: "18" # Node.js のバージョンを指定
+
+      - name: Install dependencies
+        run: npm install # npm パッケージをインストール
+
+      - name: Run build
+        run: npm run build # ビルド処理を実行
+
+  deploy:
+    name: deploy
     runs-on: ubuntu-latest
+    needs: build # build が完了してから実行
     steps:
-      - run: echo "Hello World!"
+      - name: Checkout code
+        uses: actions/checkout@v2 # 再度リポジトリを取得（deploy 用）
+
+      - name: Setup Node.js and cache
+        uses: actions/setup-node@v2
+        with:
+          node-version: "18"
+          cache: "npm" # npm パッケージをキャッシュして高速化
+
+      - name: Install firebase-tools
+        run: npm install --save-dev firebase-tools # Firebase CLI をインストール
+
+      # 🔑 Base64 化された Firebase サービスアカウント JSON をデコードして環境変数に設定
+      - name: Decode Firebase service account key
+        run: |
+          echo "${{ secrets.FIREBASE_KEY }}" | base64 -d > ./firebase-key.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/firebase-key.json" >> $GITHUB_ENV
+          # Firebase CLI が認証に使う JSON キーを作成し、環境変数に設定
+
+      # 🔧 Firebase プロジェクトIDを指定（文字列でOK、Base64 では不要）
+      - name: Set Firebase project
+        run: ./node_modules/.bin/firebase use ${{ secrets.FIREBASE_PROJECT_ID }}
+        # デプロイ対象の Firebase プロジェクトを選択
+
+      # 🚀 Firebase Hosting にデプロイ
+      - name: Deploy to Firebase Hosting
+        run: ./node_modules/.bin/firebase deploy
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }} # CLI 認証用トークン
+          FIREBASE_CLI_EXPERIMENTS: webframeworks # 実験機能を有効化
+
+      # 🧹 使用後にサービスアカウントファイルを削除して安全に
+      - name: Delete GOOGLE_APPLICATION_CREDENTIALS
+        run: rm $GOOGLE_APPLICATION_CREDENTIALS
+        if: ${{ always() }} # 常に削除（成功・失敗問わず）
