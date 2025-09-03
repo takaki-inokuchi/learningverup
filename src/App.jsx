@@ -55,7 +55,7 @@ export default function App() {
       console.log(error);
       setError("データの削除に失敗しました");
     } else {
-      console.log("削除成功", data);
+      console.log("削除成功！", data);
       setRecords(records.filter((record) => record.id !== targetId));
     }
   };
